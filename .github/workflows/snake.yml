@@ -1,0 +1,37 @@
+# 每天自动生成「贪吃蛇吃掉贡献格」的动画 SVG，供主页 README 引用。
+# 生成结果提交到本仓库的 output 分支，README 里用 raw 链接读取即可。
+name: Generate Snake
+
+on:
+  # 每天 UTC 0 点（北京时间 8 点）自动刷新
+  schedule:
+    - cron: "0 0 * * *"
+  # 允许手动触发
+  workflow_dispatch:
+  # 有推送时也刷新一次
+  push:
+    branches:
+      - main
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Generate snake SVG
+        uses: Platane/snk@v3
+        id: snake-gif
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/github-contribution-grid-snake.svg
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+
+      - name: Push to output branch
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
